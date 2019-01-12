@@ -144,11 +144,15 @@ class Tranche:
 
         invest_date = transfer_date(invest_date)
 
+        # for now let's say we can't short a fund
+        if nav < 0:
+            raise MyError('nav should be positive for {0}'.format(fundname))
+
         self.__fundname = fundname
         self.__invest_date = invest_date
         self.__nav = nav
 
-    def preject_redem(self, fund, decision_date):
+    def project_redem(self, fund, decision_date):
 
         decision_date = transfer_date(decision_date)
 
@@ -185,6 +189,10 @@ class Tranche:
             temp_decision_date = first_redem + timedelta(days=1)
 
         return res
+
+    def project_settle(self, fund, decision_date):
+        temp_res = self.project_redem()
+
 
 
 class MyError(Exception):
@@ -311,17 +319,51 @@ class TestTrancheFunctions(unittest.TestCase):
         fd = Fund('testFund', 'M', 45, 0.25, 12)
         Tranche('testFund', '2017-01-01', 3000)
 
+        # for now we do not accept shorting funds
+        fd1 = Fund('testFund1', 'A', 45, 0.2, 12)
+
+        try:
+            tc1 = Tranche('testFund1', '2017-01-01', -5)
+        except MyError as Er:
+            self.assertEqual('nav should be positive for testFund1', Er.message)
+
     def test_project_redem(self):
         fd1 = Fund('testFund1', 'Q', 45, 0.25)
         tc = Tranche('testFund1', '2017-01-01', 10)
 
-        test1 = tc.preject_redem(fd1, '2017-11-17')
+        test1 = tc.project_redem(fd1, '2017-11-17')
         result1 = [(date(2017, 12, 31), 2.5),
                    (date(2018, 3, 31), 2.5),
                    (date(2018, 6, 30), 2.5),
                    (date(2018, 9, 30), 2.5)]
 
         self.assertEqual(test1, result1)
+
+        fd2 = Fund('testFund2', 'A', 45, 0.2, 12)
+        tc2 = Tranche('testFund2', '2017-01-01', 10)
+
+        test2 = tc2.project_redem(fd2, '2017-11-17')
+        result2 = [(date(2018, 12, 31), 2),
+                   (date(2019, 12, 31), 2),
+                   (date(2020, 12, 31), 2),
+                   (date(2021, 12, 31), 2),
+                   (date(2022, 12, 31), 2)]
+
+        self.assertEqual(test2, result2)
+
+        fd3 = Fund('testFund3', 'A', 45, 0.2, 12)
+        tc3 = Tranche('testFund3', '2017-01-01', 0)
+
+        test3 = tc3.project_redem(fd3, '2017-11-17')
+        result3 = []
+
+        self.assertEqual(test3, result3)
+
+        # passed in a wrong fund
+        try:
+            tc2.project_redem(fd1, date(2017, 11, 17))
+        except MyError as Er:
+            self.assertEqual('The passed in fund does not match this tranche', Er.message)
 
 
 if __name__ == "__main__":
