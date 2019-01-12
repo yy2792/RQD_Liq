@@ -137,6 +137,10 @@ class Fund:
         temp_name = copy.deepcopy(self.__name)
         return temp_name
 
+    def get_setperiod(self):
+        temp_setperiod = copy.deepcopy(self.__SetPeriod)
+        return temp_setperiod
+
 
 class Tranche:
 
@@ -191,7 +195,11 @@ class Tranche:
         return res
 
     def project_settle(self, fund, decision_date):
-        temp_res = self.project_redem()
+        temp_res = self.project_redem(fund, decision_date)
+
+        res = [(x[0] + timedelta(days=fund.get_setperiod()), x[1]) for x in temp_res]
+
+        return res
 
 
 
@@ -364,6 +372,18 @@ class TestTrancheFunctions(unittest.TestCase):
             tc2.project_redem(fd1, date(2017, 11, 17))
         except MyError as Er:
             self.assertEqual('The passed in fund does not match this tranche', Er.message)
+
+    def test_project_settle(self):
+        fd1 = Fund('testFund1', 'Q', 4, 0.25)
+        tc = Tranche('testFund1', '2017-01-01', 10)
+
+        test1 = tc.project_settle(fd1, '2017-11-17')
+        result1 = [(date(2018, 1, 4), 2.5),
+                   (date(2018, 4, 4), 2.5),
+                   (date(2018, 7, 4), 2.5),
+                   (date(2018, 10, 4), 2.5)]
+
+        self.assertEqual(test1, result1)
 
 
 if __name__ == "__main__":
