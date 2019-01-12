@@ -158,6 +158,11 @@ class Tranche:
 
     def project_redem(self, fund, decision_date):
 
+        # this functon projects the future redemption, as
+        # the investment is marked on the redemption date,
+        # we assume the NAV won't change after the request date
+        # then each redemption amount is fixed with gate
+
         decision_date = transfer_date(decision_date)
 
         # assert tranche invests in the passed in fund
@@ -347,6 +352,9 @@ class TestTrancheFunctions(unittest.TestCase):
 
         self.assertEqual(test1, result1)
 
+        # in this test case, the lock up period is 12 months,
+        # hence though on 2017.01.01 we decide to redem,
+        # the earliest day for redemption will be 2018.12.31
         fd2 = Fund('testFund2', 'A', 45, 0.2, 12)
         tc2 = Tranche('testFund2', '2017-01-01', 10)
 
@@ -372,6 +380,31 @@ class TestTrancheFunctions(unittest.TestCase):
             tc2.project_redem(fd1, date(2017, 11, 17))
         except MyError as Er:
             self.assertEqual('The passed in fund does not match this tranche', Er.message)
+
+        # when gate is 0.33, we need to pull 4 times,
+        # last time we get 1
+        fd4 = Fund('testFund4', 'A', 45, 0.33, 12)
+        tc4 = Tranche('testFund4', '2017-01-01', 100)
+
+        test4 = tc4.project_redem(fd4, '2017-11-17')
+        result4 = [(date(2018, 12, 31), 33),
+                   (date(2019, 12, 31), 33),
+                   (date(2020, 12, 31), 33),
+                   (date(2021, 12, 31), 1)]
+
+        self.assertEqual(test4, result4)
+
+        # when gate is 0.4, we need to pull 3 times,
+        # last time we get 20
+        fd5 = Fund('testFund4', 'm', 45, 0.4, 12)
+        tc5 = Tranche('testFund4', '2017-01-01', 100)
+
+        test5 = tc5.project_redem(fd5, '2017-11-17')
+        result5 = [(date(2018, 1, 31), 40),
+                   (date(2018, 2, 28), 40),
+                   (date(2018, 3, 31), 20)]
+
+        self.assertEqual(test5, result5)
 
     def test_project_settle(self):
         fd1 = Fund('testFund1', 'Q', 4, 0.25)
