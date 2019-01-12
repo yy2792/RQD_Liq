@@ -2,6 +2,8 @@ import unittest
 from datetime import datetime, timedelta, date
 from dateutil.relativedelta import relativedelta
 import bisect
+import re
+import copy
 
 
 # ignore lock up, given a redem frequency, what is the closest redem day for a specific date
@@ -37,11 +39,29 @@ def approach_day(start_date, redemfreq):
     return res
 
 
+# for consistent datetime
+def transfer_date(timeinput):
+    # for test, if invest_date is passed in as a string, transfer it to timestamp
+    if not isinstance(timeinput, date):
+        if isinstance(timeinput, str):
+            redate = re.compile('\d{4}-\d{2}-\d{2}')
+            if redate.search(timeinput):
+                return datetime.strptime(timeinput, '%Y-%m-%d').date()
+            else:
+                raise MyError("invest_date should be timestamp or in the format 'Y-m-d'")
+        elif isinstance(timeinput, datetime):
+            return timeinput.date()
+        else:
+            raise MyError("Illegal time format")
+    else:
+        return timeinput
+
+
 class Fund:
 
     FreqMap = {'monthly': 'M', 'quarterly':'Q', 'semiannual':'S', 'annual':'A'}
 
-    def __init__(self, name, redemfreq, setperiod, gate, lockup=None):
+    def __init__(self, name, redemfreq, setperiod, gate=None, lockup=None):
 
         if redemfreq.lower() in self.FreqMap:
             redemfreq = self.FreqMap[redemfreq.lower()]
@@ -86,7 +106,7 @@ class Fund:
 
         return invest_date + relativedelta(months=self.__lockup)
 
-    # given a specific date, and investment date, return the estimate redemption date
+    # given a specific date, and investment date, return the estimated redemption date
     def est_first_redem(self, invest_date, decision_date):
         # invest_date and decision date should all be in timestamp
 
@@ -98,6 +118,71 @@ class Fund:
             temp_start_date = legal_start_date
 
         res = approach_day(temp_start_date, self.__RedemFreq)
+
+        return res
+
+    # given a specific date, and investment date, return the estimated settlement date
+    def est_first_settle(self, invest_date, decision_date):
+
+        res = self.est_first_redem(invest_date, decision_date)
+        res += timedelta(days=self.__SetPeriod)
+
+        return res
+
+    def get_gate(self):
+        temp_gate = copy.deepcopy(self.__gate)
+        return temp_gate
+
+    def get_name(self):
+        temp_name = copy.deepcopy(self.__name)
+        return temp_name
+
+
+class Tranche:
+
+    def __init__(self, fundname, invest_date, nav):
+
+        invest_date = transfer_date(invest_date)
+
+        self.__fundname = fundname
+        self.__invest_date = invest_date
+        self.__nav = nav
+
+    def preject_redem(self, fund, decision_date):
+
+        decision_date = transfer_date(decision_date)
+
+        # assert tranche invests in the passed in fund
+        if fund.get_name() != self.__fundname:
+            raise MyError('The passed in fund does not match this tranche')
+
+        temp_decision_date = decision_date
+        temp_gate = fund.get_gate()
+        temp_deposit = copy.deepcopy(self.__nav)
+
+        if temp_deposit <= 0:
+            return []
+
+        deduce_amount = temp_deposit * temp_gate
+
+        res = []
+
+        while temp_deposit > 0:
+            first_redem = fund.est_first_redem(self.__invest_date, temp_decision_date)
+
+            if first_redem is None:
+                raise MyError('illegal decision date')
+
+            if deduce_amount <= temp_deposit:
+                temp_deposit -= deduce_amount
+                res.append((first_redem, deduce_amount))
+            else:
+                # won't happen in our test sample, but if the last redem is larger than
+                # the deposit, what we pull out is only the deposit left
+                res.append((first_redem, temp_deposit))
+                temp_deposit = 0
+
+            temp_decision_date = first_redem + timedelta(days=1)
 
         return res
 
@@ -211,11 +296,32 @@ class TestFundFunctions(unittest.TestCase):
         result3 = date(2017, 6, 30)
         self.assertEqual(test3, result3)
 
+    def test_est_first_settle(self):
+
+        # invest in 2017.1.1, quarterly, earliest redem is 2017.12.31, settle is 2018.2.14
+        fd1 = Fund('testFund1', 'Q', 45, 0.25)
+        test1 = fd1.est_first_settle(date(2017, 1, 1), date(2017, 11, 17))
+        result1 = date(2018, 2, 14)
+        self.assertEqual(test1, result1)
 
 
+class TestTrancheFunctions(unittest.TestCase):
 
+    def test_init(self):
+        fd = Fund('testFund', 'M', 45, 0.25, 12)
+        Tranche('testFund', '2017-01-01', 3000)
 
+    def test_project_redem(self):
+        fd1 = Fund('testFund1', 'Q', 45, 0.25)
+        tc = Tranche('testFund1', '2017-01-01', 10)
 
+        test1 = tc.preject_redem(fd1, '2017-11-17')
+        result1 = [(date(2017, 12, 31), 2.5),
+                   (date(2018, 3, 31), 2.5),
+                   (date(2018, 6, 30), 2.5),
+                   (date(2018, 9, 30), 2.5)]
+
+        self.assertEqual(test1, result1)
 
 
 if __name__ == "__main__":
