@@ -30,9 +30,6 @@ def read_df_to_port(df_fund, df_tranche):
 
     return res_port
 
-def make_plot_for_fund_level(port):
-    pass
-
 
 if __name__ == "__main__":
 
