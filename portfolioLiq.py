@@ -94,6 +94,23 @@ class Portfolio:
 
         return res
 
+    # tranche level projection, json format
+    def tranche_level_project(self, decision_date):
+
+        decision_date = transfer_date(decision_date)
+        res = []
+
+        for fund_name in self.get_fund_names():
+            temp_project = self.project_settle(fund_name, decision_date)
+
+            for key in temp_project:
+                tranche_projected = {'id': key, 'fund': fund_name, 'projection': temp_project[key]}
+                res.append(tranche_projected)
+
+        return res
+
+
+
     # fund level average liquidity
     def weight_avg_liquidity_fund(self, fund_name, decision_date):
 
@@ -228,7 +245,7 @@ class TestPortfolioFunctions(unittest.TestCase):
 
         pf = Portfolio()
         fd = Fund('testFund1', 'M', 45, 0.25, 12)
-        fd2 = Fund('testFund2', 'Q', 0, 1)
+        fd2 = Fund('testFund2', 'Q', 0, None)
 
         pf.add_fund(fd)
         pf.add_fund(fd2)
@@ -263,7 +280,7 @@ class TestPortfolioFunctions(unittest.TestCase):
 
         pf = Portfolio()
         fd = Fund('testFund1', 'M', 45, 0.25)
-        fd2 = Fund('testFund2', 'Q', 0, 1, 12)
+        fd2 = Fund('testFund2', 'Q', 0, None, 12)
 
         pf.add_fund(fd)
         pf.add_fund(fd2)
@@ -292,6 +309,7 @@ class TestPortfolioFunctions(unittest.TestCase):
         self.assertEqual(pf.weight_avg_liquidity_fund('testFund1', date(2017, 11, 1)), res)
 
         # for fund2, 12 months lockup, 2018-02-01
+        # settle at 2018-03-31
         temp_time = (date(2018, 3, 31) - date(2017, 11, 1)).days
         res2 = pf.weight_avg_liquidity_fund('testFund2', date(2017, 11, 1))
 

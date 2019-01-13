@@ -4,7 +4,10 @@ from dateutil.relativedelta import relativedelta
 import bisect
 import re
 import copy
+import pandas as pd
 
+def isnan(num):
+    return num != num
 
 # ignore lock up, given a redem frequency, what is the closest redem day for a specific date
 def approach_day(start_date, redemfreq):
@@ -69,6 +72,12 @@ class Fund:
         if redemfreq.lower() in self.FreqMap:
             redemfreq = self.FreqMap[redemfreq.lower()]
 
+        if isnan(gate):
+            gate = None
+
+        if isnan(lockup):
+            lockup = None
+
         self.attr_check(name, redemfreq, setperiod, gate, lockup)
 
         self.__name = name
@@ -96,7 +105,7 @@ class Fund:
         Gate: {3}
         Lockup: {4}
         '''.format(self.__name, self.__RedemFreq, self.__SetPeriod,
-                   self.__lockup, self.__lockup)
+                   self.__gate, self.__lockup)
         return rp_str
 
     def __repr__(self):
@@ -208,11 +217,15 @@ class Tranche:
         if temp_deposit <= 0:
             return []
 
-        deduce_amount = temp_deposit * temp_gate
+        if temp_gate is None:
+            deduce_amount = temp_deposit
+        else:
+            deduce_amount = temp_deposit * float(temp_gate)
 
         res = []
 
-        while temp_deposit > 0:
+        # sometimes this will end up with a very small number, hence we add a cap on the loop
+        while temp_deposit > 1e-9:
             first_redem = fund.est_first_redem(self.__invest_date, temp_decision_date)
 
             if first_redem is None:
@@ -247,8 +260,8 @@ class Tranche:
         return temp_fundname
 
     def __str__(self):
-        rp_str = "tranche_id_{0}-fund_name_{1}-invest_date_{2}"\
-            .format(self.__id, self.__fundname, self.__invest_date)
+        rp_str = "tranche_id_{0}-fund_name_{1}-invest_date_{2}-NAV_{3}"\
+            .format(self.__id, self.__fundname, self.__invest_date, self.__nav)
         return rp_str
 
     def __repr__(self):
