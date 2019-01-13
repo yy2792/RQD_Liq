@@ -93,6 +93,7 @@ class Portfolio:
 
         return res
 
+    # fund level average liquidity
     def weight_avg_liquidity_fund(self, fund_name, decision_date):
 
         decision_date = transfer_date(decision_date)
@@ -109,6 +110,30 @@ class Portfolio:
             for temp_pair in project_dates[id]:
                 temp_days = (temp_pair[0] - decision_date).days
                 sum_days += temp_days * temp_pair[1]
+
+        return sum_days / float(sum_nav)
+
+    # portfolio level avg liquidity
+    def weight_avg_liquidity_portfolio(self, decision_date):
+
+        decision_date = transfer_date(decision_date)
+
+        sum_nav = 0
+        sum_days = 0
+
+        # adding up all the weighted time to liquidity for each redemption in each tranche
+        for fund_name in self.__fundLists:
+
+            # for a single fund, all the settlements dats
+            project_dates = self.project_settle(fund_name, decision_date)
+
+            for id, tranche in self.__tranches[fund_name].items():
+
+                sum_nav += tranche.get_nav()
+
+                for temp_pair in project_dates[id]:
+                    temp_days = (temp_pair[0] - decision_date).days
+                    sum_days += temp_days * temp_pair[1]
 
         return sum_days / float(sum_nav)
 
@@ -270,6 +295,41 @@ class TestPortfolioFunctions(unittest.TestCase):
         res2 = pf.weight_avg_liquidity_fund('testFund2', date(2017, 11, 1))
 
         self.assertEqual(temp_time, res2)
+
+    def test_weight_avg_liquidity_portfolio(self):
+
+        tc1 = Tranche('testFund1', '2017-01-01', 100, 1)
+        tc2 = Tranche('testFund1', '2017-02-01', 300, 2)
+        tc3 = Tranche('testFund2', '2017-03-01', 100, 3)
+
+        pf = Portfolio()
+        fd = Fund('testFund1', 'M', 45, 0.25)
+        fd2 = Fund('testFund2', 'Q', 0, 1, 12)
+
+        pf.add_fund(fd)
+        pf.add_fund(fd2)
+
+        pf.add_tranche(tc1)
+        pf.add_tranche(tc2)
+
+        # as we haven't added tc3, the result for portfolio level should be
+        # the same as the fund level
+
+        res1 = pf.weight_avg_liquidity_fund('testFund1', '2017-11-01')
+        res2 = pf.weight_avg_liquidity_portfolio('2017-11-01')
+
+        self.assertEqual(res1, res2)
+
+        pf.add_tranche(tc3)
+
+        res3 = res1 * 400 + pf.weight_avg_liquidity_fund('testFund2', '2017-11-01') * 100
+        res3 /= float(500)
+
+        res4 = pf.weight_avg_liquidity_portfolio('2017-11-01')
+
+        self.assertEqual(res3, res4)
+
+
 
 
 
