@@ -177,6 +177,14 @@ class Tranche:
         self.__nav = nav
         self.__id = id
 
+    def update_nav(self, nav=None):
+        if nav:
+            self.__nav = nav
+
+    def get_nav(self):
+        temp_nav = copy.deepcopy(self.__nav)
+        return temp_nav
+
     def project_redem(self, fund, decision_date):
 
         # this functon projects the future redemption, as

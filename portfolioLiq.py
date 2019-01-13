@@ -18,6 +18,8 @@ class Portfolio:
         self.__tranches = {}
         self.__tranches_id = {}
 
+    # region change and add attr
+
     def add_fund(self, fund):
 
         if fund.get_name() in self.__fundLists:
@@ -30,6 +32,7 @@ class Portfolio:
             self.__fundLists[fund.get_name()] = fund
             self.__tranches[fund.get_name()] = {}
 
+    # update any fund info inside the class
     def update_fund(self, name, redemfreq=None, setperiod=None, gate=None, lockup=None):
 
         if name in self.__fundLists:
@@ -37,10 +40,17 @@ class Portfolio:
         else:
             raise MyError('updating a fund that does not exist before')
 
+    def get_fundLists(self):
+        # for debug, return a copy of attribute fundList
+        temp_fundLists = copy.deepcopy(self.__fundLists)
+        return temp_fundLists
+
+    # return all fund name inside the portfolio
     def get_fund_names(self):
         # return all existing fund names
         return [x for x in self.__fundLists]
 
+    # add in a tranche
     def add_tranche(self, tranche):
 
         fund_name = tranche.get_fundname()
@@ -57,18 +67,20 @@ class Portfolio:
         self.__tranches_id[tranche_id] = fund_name
         self.__tranches[fund_name][tranche_id] = tranche
 
-    def update_tranche(self, id):
-        pass
+    # update an exisitng tranche's nav
+    def update_tranche_nav(self, id, nav):
+        # only nav can be updated
+        fund_name = self.__tranches_id[id]
+        self.__tranches[fund_name][id].update_nav(nav=nav)
 
-
+    # print all the tranches inside the portfolio
     def print_tranche(self, fundname):
         # print out what tranches exist for a certain fund
         print(self.__tranches[fundname])
 
-    def get_fundLists(self):
-        # for debug
-        temp_fundLists = copy.deepcopy(self.__fundLists)
-        return temp_fundLists
+    # endregion
+
+    
 
 
 
@@ -114,12 +126,14 @@ class TestPortfolioFunctions(unittest.TestCase):
             self.assertEqual('the fund of this tranche does not exist \
             in the internal fund table', er.message)
 
-
         try:
             pf.add_tranche(tc1)
         except MyError as er:
             self.assertEqual('This tranche already exists inside the \
             internal tranche table', er.message)
+
+        pf.update_tranche_nav(3, 300)
+        self.assertEqual(tc3.get_nav(), 300)
 
 
     def test_update_fund(self):
