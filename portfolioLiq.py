@@ -82,6 +82,7 @@ class Portfolio:
 
     # endregion
 
+    # on a certain decision date, project the future cash redemption under a fund
     def project_settle(self, fund_name, decision_date):
 
         decision_date = transfer_date(decision_date)
@@ -328,10 +329,6 @@ class TestPortfolioFunctions(unittest.TestCase):
         res4 = pf.weight_avg_liquidity_portfolio('2017-11-01')
 
         self.assertEqual(res3, res4)
-
-
-
-
 
 
 if __name__ == "__main__":
