@@ -33,15 +33,11 @@ def read_df_to_port(df_fund, df_tranche):
 
 if __name__ == "__main__":
 
-    dirname = os.path.dirname(__file__)
+    #dirname = os.path.dirname(__file__)
 
-    filePath = dirname + '/inputs/RQD_Liquidity Case.xlsx'
+    filePath = 'RQD_Liquidity Case.xlsx'
 
-    try:
-        df_fund, df_tranche = read_input(filePath)
-    except FileNotFoundError:
-        filePath = dirname + '\inputs\RQD_Liquidity Case.xlsx'
-        df_fund, df_tranche = read_input(filePath)
+    df_fund, df_tranche = read_input(filePath)
 
     res_port = read_df_to_port(df_fund, df_tranche)
 
