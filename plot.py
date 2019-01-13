@@ -71,6 +71,13 @@ def plot_fund(df, start, path):
         r, g, b = tableau20[i]
         tableau20[i] = (r / 255., g / 255., b / 255.)
 
+    # These are the "markers"
+
+    markers20 = ['.', 'o', 'v', '^', '<', '>', '1', '2', '3',
+                 '4', '8', 's', 'p', 'P', '*', 'h', 'H', '+',
+                 'x', 'D', 'd', '|', '_', 0, 1, 2, 3, 4, 5, 6,
+                 7, 8, 9, 10, 11]
+
     plt.figure(figsize=(12, 14))
     ax = plt.subplot(111)
     ax.spines["top"].set_visible(False)
@@ -91,7 +98,7 @@ def plot_fund(df, start, path):
 
     for fund in all_funds_df:
         df_temp = all_funds_df[fund]
-        plt.plot(df_temp['date'], df_temp['redem'], "-", marker='o', lw=2.5,
+        plt.plot(df_temp['date'], df_temp['redem'], "-", marker=markers20[rank % 32], lw=2.5,
                  color=tableau20[rank], alpha=0.3, label=fund, markersize=12)
         rank += 1
         plt.tick_params(axis="both", which="both", bottom=False, top=False,
@@ -168,6 +175,11 @@ def plot_tranches(df, start, path):
         r, g, b = tableau20[i]
         tableau20[i] = (r / 255., g / 255., b / 255.)
 
+    markers20 = ['.', 'o', 'v', '^', '<', '>', '1', '2', '3',
+                 '4', '8', 's', 'p', 'P', '*', 'h', 'H', '+',
+                 'x', 'D', 'd', '|', '_', 0, 1, 2, 3, 4, 5, 6,
+                 7, 8, 9, 10, 11]
+
     plt.figure(figsize=(12, 14))
     ax = plt.subplot(111)
     ax.spines["top"].set_visible(False)
@@ -188,7 +200,7 @@ def plot_tranches(df, start, path):
 
     for tranche in all_tranches_df:
         df_temp = all_tranches_df[tranche]
-        plt.plot(df_temp['date'], df_temp['redem'], "-", marker=rank % 11, lw=2.5,
+        plt.plot(df_temp['date'], df_temp['redem'], "-", marker=markers20[rank % 32], lw=2.5,
                  color=tableau20[rank % 20], alpha=0.3, label=tranche, markersize=12)
         rank += 1
         plt.tick_params(axis="both", which="both", bottom=False, top=False,
