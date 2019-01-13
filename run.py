@@ -9,4 +9,4 @@ if __name__ == "__main__":
 
     df_tranche = pd.read_excel(filePath, 'Tranche Investment Data')
 
-    print(df_tranche.loc[1,'Date of Investment'].year)
+    print(df_tranche)

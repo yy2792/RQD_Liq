@@ -141,10 +141,30 @@ class Fund:
         temp_setperiod = copy.deepcopy(self.__SetPeriod)
         return temp_setperiod
 
+    def set_attr(self, redemfreq=None, setperiod=None, gate=None, lockup=None):
+
+        if redemfreq:
+            self.__RedemFreq = redemfreq
+        if setperiod:
+            self.__SetPeriod = setperiod
+        if gate:
+            self.__gate = gate
+        if lockup:
+            self.__lockup = lockup
+
+    def __eq__(self, other):
+        if self.__name == other.__name and self.__lockup == other.__lockup and \
+            self.__SetPeriod == other.__SetPeriod and self.__RedemFreq == other.__RedemFreq and \
+            self.__gate == other.__gate:
+
+            return True
+        else:
+            return False
+
 
 class Tranche:
 
-    def __init__(self, fundname, invest_date, nav):
+    def __init__(self, fundname, invest_date, nav, id = None):
 
         invest_date = transfer_date(invest_date)
 
@@ -155,6 +175,7 @@ class Tranche:
         self.__fundname = fundname
         self.__invest_date = invest_date
         self.__nav = nav
+        self.__id = id
 
     def project_redem(self, fund, decision_date):
 
@@ -206,6 +227,21 @@ class Tranche:
 
         return res
 
+    def get_id(self):
+        temp_id = copy.deepcopy(self.__id)
+        return temp_id
+
+    def get_fundname(self):
+        temp_fundname = copy.deepcopy(self.__fundname)
+        return temp_fundname
+
+    def __str__(self):
+        rp_str = "tranche_id_{0}-fund_name_{1}-invest_date_{2}"\
+            .format(self.__id, self.__fundname, self.__invest_date)
+        return rp_str
+
+    def __repr__(self):
+        return self.__str__()
 
 
 class MyError(Exception):
@@ -325,6 +361,12 @@ class TestFundFunctions(unittest.TestCase):
         result1 = date(2018, 2, 14)
         self.assertEqual(test1, result1)
 
+    def test_set_attr(self):
+        fd1 = Fund('one', 'Q', 45, 0.25)
+        self.assertEqual(fd1.get_setperiod(), 45)
+
+        fd1.set_attr(setperiod=30)
+        self.assertEqual(fd1.get_setperiod(), 30)
 
 class TestTrancheFunctions(unittest.TestCase):
 
