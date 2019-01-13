@@ -15,7 +15,10 @@ def approach_day(start_date, redemfreq):
     res = None
 
     if redemfreq == 'M':
-        res = date(temp_year, temp_month + 1, 1) - timedelta(days = 1)
+        if temp_month == 12:
+            res = date(temp_year, 12, 31)
+        else:
+            res = date(temp_year, temp_month + 1, 1) - timedelta(days = 1)
 
     elif redemfreq == 'Q':
         qrts = [date(temp_year, 3, 31), date(temp_year, 6, 30),
