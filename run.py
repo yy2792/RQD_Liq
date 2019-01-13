@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 from portfolioLiq import *
+from plot import *
 import json
 
 def read_input(path):
@@ -28,6 +29,9 @@ def read_df_to_port(df_fund, df_tranche):
         res_port.add_tranche(temp_tranche)
 
     return res_port
+
+def make_plot_for_fund_level(port):
+    pass
 
 
 if __name__ == "__main__":

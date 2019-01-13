@@ -4,7 +4,6 @@ from dateutil.relativedelta import relativedelta
 import bisect
 import re
 import copy
-import pandas as pd
 
 def isnan(num):
     return num != num
