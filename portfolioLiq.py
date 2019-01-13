@@ -109,8 +109,6 @@ class Portfolio:
 
         return res
 
-
-
     # fund level average liquidity
     def weight_avg_liquidity_fund(self, fund_name, decision_date):
 
@@ -130,6 +128,17 @@ class Portfolio:
                 sum_days += temp_days * temp_pair[1]
 
         return sum_days / float(sum_nav)
+
+    def weight_avg_liquidity_fund_level(self, decision_date):
+
+        res = []
+
+        for fund_name in self.get_fund_names():
+            liq = self.weight_avg_liquidity_fund(fund_name, decision_date)
+            temp_liq = {'fund': fund_name, 'Liq': round(liq, 5)}
+            res.append(temp_liq)
+
+        return res
 
     # portfolio level avg liquidity
     def weight_avg_liquidity_portfolio(self, decision_date):

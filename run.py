@@ -30,7 +30,6 @@ def read_df_to_port(df_fund, df_tranche):
     return res_port
 
 
-
 if __name__ == "__main__":
 
     dirname = os.path.dirname(__file__)
@@ -40,17 +39,56 @@ if __name__ == "__main__":
 
     res_port = read_df_to_port(df_fund, df_tranche)
 
-    # task 1 a, tranche level projections
+    # region task1a
 
+    # tranche level projections
     # assume decision date to redem is 2017.5.31
 
-    print('Tranche Level Settlement Projection')
+    print('Tranche Level Settlement Projection： ')
+
+    decision_date = '2017-05-31'
 
     def default(o):
         if isinstance(o, (date, datetime)):
             return o.isoformat()
 
-    res = res_port.tranche_level_project('2017-05-31')
+    res = res_port.tranche_level_project(decision_date)
 
-    with open('Tranche_Level_Settle_Projection.json', 'w') as jsonfile:
+    with open('Tranche_Level_Settle_Projection_{}.json'.format(decision_date), 'w') as jsonfile:
         json.dump(res, jsonfile, indent = 4, default=default)
+
+    print('result saved to Tranche_Level_Settle_Projection_{}.json'.format(decision_date))
+
+    # endregion
+
+    # region task1b
+    # for each fund, calculate weighted avg time to liqudity
+    print('Fund Level Liquidity Calculation')
+
+    res = res_port.weight_avg_liquidity_fund_level(decision_date)
+
+    with open('Fund_level_weight_avg_liquidity_{}.json'.format(decision_date), 'w') as jsonfile:
+        json.dump(res, jsonfile, indent = 4, default=default)
+
+    print('result saved to Fund_level_weight_avg_liquidity_{}.json'.format(decision_date))
+
+    # endregion
+
+    # region task1c
+
+    print('Portfolio Level Liquidity Calculation')
+
+    res_num = res_port.weight_avg_liquidity_portfolio(decision_date)
+
+    res = {'Portfolio': round(res_num, 5)}
+
+    with open('Portfolio_level_weight_avg_liquidity_{}.json'.format(decision_date), 'w') as jsonfile:
+        json.dump(res, jsonfile, indent = 4, default=default)
+
+    print('result saved to Portfolio_level_weight_avg_liquidity_{}.json'.format(decision_date))
+
+    # endregion
+
+
+
+
