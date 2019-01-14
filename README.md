@@ -151,7 +151,7 @@ example_prot.weight_avg_liqudity_portfolio(decision_date)
 
 ```
 
-The result are given as a list of dictionaries for fund level, with key as fund name,
-value is the liquidity measure.
+The result are given as a list of dictionaries for fund level, with keys as fund name,
+values as the liquidity measure.
 
 
