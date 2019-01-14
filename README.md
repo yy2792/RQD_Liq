@@ -94,8 +94,8 @@ of tranches, each tranche will be associated with a certain fund.
 Fund has the information of redemption frequency, settlement period, gate, lockup,
 tranche instance has the information of when invested in, nav. 
 
-In run.py, we provide read_input function and read_df_to_port function which reads two dataframes,
-each belongs to the given spreadsheet, function returns a portfolio instance.
+In run.py, we provide read_input function which reads excel file into two dataframes, 
+and read_df_to_port function which reads two dataframes into a portfolio instance.
 
 ```bash
 
@@ -105,7 +105,7 @@ example_port = read_df_to_port(df_fund, df_tranche)
 
 ```
 
-One can see what funds inside the portfolio by running 
+One can see what funds are inside the portfolio by running 
 
 ```bash
 
@@ -130,7 +130,7 @@ Given a tranche (each tranche has a unique id), the portfolio instance will
 look at that tranche instance, pull the information for the associated fund,
 consider the restrictions and give out settlement date projection.
 
-The method tranche_level_project is given, when given a decision date,
+For the method tranche_level_project, when given a decision date,
 the method will give all the projections for settlement date and cash flow redemption value.
 result is a list of dictionary as in the json file.
 
