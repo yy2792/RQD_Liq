@@ -68,8 +68,8 @@ Below plots visualize the projections for tranches, funds, and whole portfolio.
 ```
 
 fund_level_liquidity_2017-05-31.png
-fund_level_liquidity_2017-05-31.png
-fund_level_liquidity_2017-05-31.png
+tranche_level_liquidity_2017-05-31.png
+Portfolio_level_liquidity_2017-05-31.png
 
 ```
 
@@ -132,7 +132,7 @@ consider the restrictions and give out settlement date projection.
 
 For the method tranche_level_project, when given a decision date,
 the method will give all the projections for settlement date and cash flow redemption value.
-result is a list of dictionary as in the json file.
+result is a list of dictionary as in the json file tranche_level_settle_projection.
 
 ```bash
 
